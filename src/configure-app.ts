@@ -28,7 +28,7 @@ export function configureApp(app: INestApplication): void {
     next();
   });
 
-  app.setGlobalPrefix('api/v1');
+  app.setGlobalPrefix('api/v1', { exclude: ['health/live', 'health/ready'] });
 
   app.useGlobalPipes(
     new ValidationPipe({

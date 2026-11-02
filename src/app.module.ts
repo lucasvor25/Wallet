@@ -13,6 +13,7 @@ import { TransfersModule } from './modules/transfers/transfers.module';
 import { UsersModule } from './modules/users/users.module';
 import { WalletsModule } from './modules/wallets/wallets.module';
 import { LoggingModule } from './common/logging/logging.module';
+import { HealthModule } from './modules/health/health.module';
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import { LoggingModule } from './common/logging/logging.module';
     LedgerModule,
     TransfersModule,
     LoggingModule,
+    HealthModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: AppThrottlerGuard }],
 })
