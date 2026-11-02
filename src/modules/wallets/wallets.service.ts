@@ -1,6 +1,7 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { WalletsRepository } from './wallets.repository';
 import { WalletResponseDto } from './dto/wallet.response.dto';
+import { WalletNotFoundError } from '../../common/errors/domain-errors';
 
 @Injectable()
 export class WalletsService {
@@ -8,7 +9,7 @@ export class WalletsService {
 
   async getByUserId(userId: string): Promise<WalletResponseDto> {
     const wallet = await this.wallets.findByUserId(userId);
-    if (!wallet) throw new NotFoundException('Carteira não encontrada');
+    if (!wallet) throw new WalletNotFoundError();
 
     return {
       id: wallet.id,

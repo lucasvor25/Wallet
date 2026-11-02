@@ -1,9 +1,4 @@
-import {
-  ConflictException,
-  Injectable,
-  OnModuleInit,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as argon2 from 'argon2';
@@ -14,6 +9,10 @@ import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { TransactionManager } from '../../common/database/transaction-manager';
 import { WalletsRepository } from '../wallets/wallets.repository';
+import {
+  EmailAlreadyRegisteredError,
+  InvalidCredentialsError,
+} from '../../common/errors/domain-errors';
 
 export interface RegisterResult {
   id: string;
@@ -59,7 +58,7 @@ export class AuthService implements OnModuleInit {
       });
     } catch (err) {
       if (this.isUniqueEmailViolation(err)) {
-        throw new ConflictException('E-mail já cadastrado');
+        throw new EmailAlreadyRegisteredError();
       }
       throw err;
     }
@@ -73,7 +72,7 @@ export class AuthService implements OnModuleInit {
     const valid = await argon2.verify(hash, dto.password).catch(() => false);
 
     if (!user || !valid) {
-      throw new UnauthorizedException('Credenciais inválidas');
+      throw new InvalidCredentialsError();
     }
 
     const accessToken = await this.jwt.signAsync({ sub: user.id });
