@@ -7,7 +7,6 @@ import { TransactionManager } from '../../common/database/transaction-manager';
 export class UsersRepository {
   constructor(private readonly tx: TransactionManager) {}
 
-  // Getter (e não propriedade): busca o manager a cada chamada, usando o da transação em andamento.
   private get repo(): Repository<User> {
     return this.tx.manager.getRepository(User);
   }
