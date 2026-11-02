@@ -20,4 +20,16 @@ export class WalletsRepository {
   findByUserId(userId: string): Promise<Wallet | null> {
     return this.repo.findOne({ where: { userId } });
   }
+
+  lockById(id: string): Promise<Wallet | null> {
+    return this.repo
+      .createQueryBuilder('w')
+      .setLock('pessimistic_write')
+      .where('w.id = :id', { id })
+      .getOne();
+  }
+
+  async updateBalance(id: string, balanceInCents: number): Promise<void> {
+    await this.repo.update(id, { balanceInCents });
+  }
 }
