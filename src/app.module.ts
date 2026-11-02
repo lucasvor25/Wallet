@@ -7,6 +7,8 @@ import { UsersModule } from './modules/users/users.module';
 import { DatabaseModule } from './common/database/database.module';
 import { WalletsModule } from './modules/wallets/wallets.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { LedgerModule } from './modules/ledger/ledger.module';
+import { TransfersModule } from './modules/transfers/transfers.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -28,6 +30,8 @@ import { AuthModule } from './modules/auth/auth.module';
     DatabaseModule,
     WalletsModule,
     AuthModule,
+    LedgerModule,
+    TransfersModule,
   ],
 })
 export class AppModule {}

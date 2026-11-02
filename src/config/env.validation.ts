@@ -11,10 +11,11 @@ export const envValidationSchema = Joi.object({
   DATABASE_PASSWORD: Joi.string().required(),
   DATABASE_NAME: Joi.string().required(),
   JWT_SECRET: Joi.string().min(32).required(),
-  JWT_EXPIRES_IN: Joi.string().default('15m'),
+  JWT_EXPIRES_IN: Joi.string().default('60m'),
   MAX_TRANSFER_CENTS: Joi.number().integer().positive().default(5_000_000),
   REVERSAL_WINDOW_HOURS: Joi.number().positive().default(72),
   IDEMPOTENCY_TTL_HOURS: Joi.number().positive().default(24),
+  SEED_USER_PASSWORD: Joi.string().optional(),
   LOG_LEVEL: Joi.string()
     .valid('debug', 'info', 'warn', 'error')
     .default('info'),

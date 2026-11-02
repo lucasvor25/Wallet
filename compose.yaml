@@ -33,7 +33,19 @@ services:
       DATABASE_HOST: db
       DATABASE_PORT: 5432
     ports:
-      - '${PORT:-3000}:3000'
+      - '${API_PORT:-3000}:3000'
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  seed:
+    build: .
+    profiles: ['seed']
+    command: node dist/database/seeds/seed.js
+    env_file: .env
+    environment:
+      DATABASE_HOST: db
+      DATABASE_PORT: 5432
     depends_on:
       migrate:
         condition: service_completed_successfully
