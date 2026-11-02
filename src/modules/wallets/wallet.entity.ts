@@ -1,5 +1,5 @@
 import { Column, CreateDateColumn, Entity, PrimaryColumn, UpdateDateColumn } from 'typeorm';
-import { bigintTransformer } from '../../commom/database/bigint.transformer';
+import { bigintTransformer } from '../../common/database/bigint.transformer';
 
 @Entity('wallets')
 export class Wallet {
@@ -18,7 +18,7 @@ export class Wallet {
         transformer: bigintTransformer,
         default: 0,
     })
-    balanceInCents!: bigint;
+    balanceInCents!: number;
 
     @Column({
         name: 'currency',
