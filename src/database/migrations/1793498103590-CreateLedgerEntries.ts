@@ -1,9 +1,8 @@
-import { MigrationInterface, QueryRunner } from "typeorm";
+import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class CreateLedgerEntries1793498103590 implements MigrationInterface {
-
-    public async up(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`
+  public async up(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(`
     CREATE TABLE ledger_entries (
       id uuid PRIMARY KEY,
       wallet_id uuid NOT NULL REFERENCES wallets(id),
@@ -21,17 +20,16 @@ export class CreateLedgerEntries1793498103590 implements MigrationInterface {
         CHECK ((source = 'DEMO_SEED') = (transfer_id IS NULL))
     )
   `);
-        await queryRunner.query(`
+    await queryRunner.query(`
     CREATE INDEX ix_ledger_wallet
       ON ledger_entries (wallet_id, created_at DESC, id DESC)
   `);
-        await queryRunner.query(`
+    await queryRunner.query(`
     CREATE INDEX ix_ledger_transfer ON ledger_entries (transfer_id)
   `);
-    }
+  }
 
-    public async down(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`DROP TABLE ledger_entries`);
-    }
-
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(`DROP TABLE ledger_entries`);
+  }
 }

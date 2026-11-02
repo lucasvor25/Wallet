@@ -1,15 +1,17 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { envValidationSchema } from './config/env.validation';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { buildDataSourceOptions } from './database/typeorm.options';
+import { UsersModule } from './modules/users/users.module';
+import { DatabaseModule } from './common/database/database.module';
+import { WalletsModule } from './modules/wallets/wallets.module';
+import { AuthModule } from './modules/auth/auth.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      validationSchema: envValidationSchema
+      validationSchema: envValidationSchema,
     }),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
@@ -22,6 +24,10 @@ import { buildDataSourceOptions } from './database/typeorm.options';
           database: config.getOrThrow('DATABASE_NAME'),
         }),
     }),
+    UsersModule,
+    DatabaseModule,
+    WalletsModule,
+    AuthModule,
   ],
 })
-export class AppModule { }
+export class AppModule {}
