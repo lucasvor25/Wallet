@@ -58,6 +58,8 @@ export class TestContext {
         process.env.DATABASE_PASSWORD = container.getPassword();
         process.env.DATABASE_NAME = container.getDatabase();
         process.env.JWT_SECRET = 'ksjdfkjsdfkjdsakjflkasjkflmksamf,msanc,vmsklamglmfakçfkfskkfkafkasflkfakflçfdklçfças';
+        // Todas as requisições do Supertest saem do mesmo IP; com o rate limit ativo, os testes recebem 429.
+        process.env.THROTTLE_DISABLED = 'true';
 
         const migrator = new DataSource(
             buildDataSourceOptions({
