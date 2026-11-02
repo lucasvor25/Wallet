@@ -7,6 +7,8 @@ import {
   BalanceLimitExceededError,
   IdempotencyKeyConflictError,
   InsufficientBalanceError,
+  ReversalFundsUnavailableError,
+  ReversalNotAllowedError,
   ReversalWindowExpiredError,
   SelfTransferError,
   TransferAlreadyReversedError,
@@ -42,7 +44,7 @@ export class TransfersService {
     private readonly ledger: LedgerRepository,
     private readonly idempotency: IdempotencyRepository,
     private readonly config: ConfigService,
-  ) {}
+  ) { }
 
   async create(
     userId: string,
@@ -184,10 +186,10 @@ export class TransfersService {
       if (!userWallet) throw new WalletNotFoundError();
       if (!probe) throw new TransferNotFoundError();
 
-      const isParticipant =
-        probe.senderWalletId === userWallet.id ||
-        probe.receiverWalletId === userWallet.id;
-      if (!isParticipant) throw new TransferNotFoundError();
+      const isSender = probe.senderWalletId === userWallet.id;
+      const isReceiver = probe.receiverWalletId === userWallet.id;
+      if (!isSender && !isReceiver) throw new TransferNotFoundError();
+      if (!isSender) throw new ReversalNotAllowedError();
 
       const [sender, receiver] = await this.lockPair(
         probe.senderWalletId,
@@ -204,7 +206,7 @@ export class TransfersService {
 
       const amount = original.amountInCents;
       if (receiver.balanceInCents < amount)
-        throw new InsufficientBalanceError();
+        throw new ReversalFundsUnavailableError();
       const newReceiverBalance = receiver.balanceInCents - amount;
       const newSenderBalance = sender.balanceInCents + amount;
 

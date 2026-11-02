@@ -13,27 +13,27 @@ export interface NewIdempotencyKey {
 
 @Injectable()
 export class IdempotencyRepository {
-  constructor(private readonly tx: TransactionManager) {}
+  constructor(private readonly tx: TransactionManager) { }
 
   private get repo(): Repository<IdempotencyKey> {
     return this.tx.manager.getRepository(IdempotencyKey);
   }
 
-  async tryInsert(entry: NewIdempotencyKey): Promise<boolean> {
-    const result = await this.repo
-      .createQueryBuilder()
-      .insert()
-      .into(IdempotencyKey)
-      .values({
-        ...entry,
-        responseStatus: null,
-        responseBody: null,
-      })
-      .orIgnore()
-      .returning('id')
-      .execute();
-
-    return result.identifiers.length > 0;
+  async tryInsert(row: {
+    id: string;
+    userId: string;
+    key: string;
+    requestHash: string;
+    expiresAt: Date;
+  }): Promise<boolean> {
+    const rows: unknown[] = await this.tx.manager.query(
+      `INSERT INTO idempotency_keys (id, user_id, key, request_hash, expires_at)
+     VALUES ($1, $2, $3, $4, $5)
+     ON CONFLICT (user_id, key) DO NOTHING
+     RETURNING id`,
+      [row.id, row.userId, row.key, row.requestHash, row.expiresAt],
+    );
+    return rows.length > 0;
   }
 
   lockByUserAndKey(
@@ -48,22 +48,23 @@ export class IdempotencyRepository {
   }
 
   async reset(id: string, requestHash: string, expiresAt: Date): Promise<void> {
-    await this.repo.update(id, {
-      requestHash,
-      expiresAt,
-      responseStatus: null,
-      responseBody: null,
-    });
+    await this.tx.manager.query(
+      `UPDATE idempotency_keys
+        SET request_hash = $2,
+            expires_at = $3,
+            response_status = NULL,
+            response_body = NULL
+      WHERE id = $1`,
+      [id, requestHash, expiresAt],
+    );
   }
 
-  async saveResponse(
-    id: string,
-    responseStatus: number,
-    responseBody: Record<string, unknown>,
-  ): Promise<void> {
-    await this.repo.query(
-      'UPDATE idempotency_keys SET response_status = $1, response_body = $2::jsonb WHERE id = $3',
-      [responseStatus, JSON.stringify(responseBody), id],
-    );
+  async saveResponse(id: string, status: number, body: object): Promise<void> {
+    const result = await this.tx.manager
+      .getRepository(IdempotencyKey)
+      .update({ id }, { responseStatus: status, responseBody: body });
+    if (result.affected !== 1) {
+      throw new Error(`Idempotency record ${id} not found when saving response`);
+    }
   }
 }

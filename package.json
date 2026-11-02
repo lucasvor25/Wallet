@@ -11,6 +11,7 @@
     "migration:run": "npm run typeorm -- migration:run",
     "migration:revert": "npm run typeorm -- migration:revert",
     "migration:run:prod": "typeorm migration:run -d dist/database/data-source.js",
+    "seed": "ts-node src/database/seeds/seed.ts",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
