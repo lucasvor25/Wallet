@@ -1,8 +1,8 @@
 import {
-    ConflictException,
-    Injectable,
-    OnModuleInit,
-    UnauthorizedException,
+  ConflictException,
+  Injectable,
+  OnModuleInit,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
@@ -16,73 +16,77 @@ import { TransactionManager } from '../../common/database/transaction-manager';
 import { WalletsRepository } from '../wallets/wallets.repository';
 
 export interface RegisterResult {
-    id: string;
-    email: string;
-    walletId: string;
+  id: string;
+  email: string;
+  walletId: string;
 }
 
 export interface LoginResult {
-    accessToken: string;
-    tokenType: 'Bearer';
-    expiresIn: string;
+  accessToken: string;
+  tokenType: 'Bearer';
+  expiresIn: string;
 }
 
 @Injectable()
 export class AuthService implements OnModuleInit {
-    private dummyHash!: string;
+  private dummyHash!: string;
 
-    constructor(
-        private readonly tx: TransactionManager,
-        private readonly users: UsersRepository,
-        private readonly wallets: WalletsRepository,
-        private readonly jwt: JwtService,
-        private readonly config: ConfigService,
-    ) { }
+  constructor(
+    private readonly tx: TransactionManager,
+    private readonly users: UsersRepository,
+    private readonly wallets: WalletsRepository,
+    private readonly jwt: JwtService,
+    private readonly config: ConfigService,
+  ) {}
 
-    async onModuleInit(): Promise<void> {
-        this.dummyHash = await argon2.hash('dummy-password', { type: argon2.argon2id });
+  async onModuleInit(): Promise<void> {
+    this.dummyHash = await argon2.hash('dummy-password', {
+      type: argon2.argon2id,
+    });
+  }
+
+  async register(dto: RegisterDto): Promise<RegisterResult> {
+    const passwordHash = await argon2.hash(dto.password, {
+      type: argon2.argon2id,
+    });
+    const userId = randomUUID();
+    const walletId = randomUUID();
+
+    try {
+      await this.tx.run(async () => {
+        await this.users.insert({ id: userId, email: dto.email, passwordHash });
+        await this.wallets.insert({ id: walletId, userId, balanceInCents: 0 });
+      });
+    } catch (err) {
+      if (this.isUniqueEmailViolation(err)) {
+        throw new ConflictException('E-mail já cadastrado');
+      }
+      throw err;
     }
 
-    async register(dto: RegisterDto): Promise<RegisterResult> {
-        const passwordHash = await argon2.hash(dto.password, { type: argon2.argon2id });
-        const userId = randomUUID();
-        const walletId = randomUUID();
+    return { id: userId, email: dto.email, walletId };
+  }
 
-        try {
-            await this.tx.run(async () => {
-                await this.users.insert({ id: userId, email: dto.email, passwordHash });
-                await this.wallets.insert({ id: walletId, userId, balanceInCents: 0 });
-            });
-        } catch (err) {
-            if (this.isUniqueEmailViolation(err)) {
-                throw new ConflictException('E-mail já cadastrado');
-            }
-            throw err;
-        }
+  async login(dto: LoginDto): Promise<LoginResult> {
+    const user = await this.users.findByEmailWithHash(dto.email);
+    const hash = user?.passwordHash ?? this.dummyHash;
+    const valid = await argon2.verify(hash, dto.password).catch(() => false);
 
-        return { id: userId, email: dto.email, walletId };
+    if (!user || !valid) {
+      throw new UnauthorizedException('Credenciais inválidas');
     }
 
-    async login(dto: LoginDto): Promise<LoginResult> {
-        const user = await this.users.findByEmailWithHash(dto.email);
-        const hash = user?.passwordHash ?? this.dummyHash;
-        const valid = await argon2.verify(hash, dto.password).catch(() => false);
+    const accessToken = await this.jwt.signAsync({ sub: user.id });
+    return {
+      accessToken,
+      tokenType: 'Bearer',
+      expiresIn: this.config.getOrThrow<string>('JWT_EXPIRES_IN'),
+    };
+  }
 
-        if (!user || !valid) {
-            throw new UnauthorizedException('Credenciais inválidas');
-        }
-
-        const accessToken = await this.jwt.signAsync({ sub: user.id });
-        return {
-            accessToken,
-            tokenType: 'Bearer',
-            expiresIn: this.config.getOrThrow<string>('JWT_EXPIRES_IN'),
-        };
-    }
-
-    private isUniqueEmailViolation(err: unknown): boolean {
-        if (!(err instanceof QueryFailedError)) return false;
-        const driver = err.driverError as { code?: string; constraint?: string };
-        return driver.code === '23505' && driver.constraint === 'uq_users_email';
-    }
+  private isUniqueEmailViolation(err: unknown): boolean {
+    if (!(err instanceof QueryFailedError)) return false;
+    const driver = err.driverError as { code?: string; constraint?: string };
+    return driver.code === '23505' && driver.constraint === 'uq_users_email';
+  }
 }

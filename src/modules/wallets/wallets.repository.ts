@@ -3,20 +3,21 @@ import { Repository } from 'typeorm';
 import { TransactionManager } from '../../common/database/transaction-manager';
 import { Wallet } from './wallet.entity';
 
-
 @Injectable()
 export class WalletsRepository {
-    constructor(private readonly tx: TransactionManager) { }
+  constructor(private readonly tx: TransactionManager) {}
 
-    private get repo(): Repository<Wallet> {
-        return this.tx.manager.getRepository(Wallet);
-    }
+  private get repo(): Repository<Wallet> {
+    return this.tx.manager.getRepository(Wallet);
+  }
 
-    async insert(wallet: Pick<Wallet, 'id' | 'userId' | 'balanceInCents'>): Promise<void> {
-        await this.repo.insert(wallet);
-    }
+  async insert(
+    wallet: Pick<Wallet, 'id' | 'userId' | 'balanceInCents'>,
+  ): Promise<void> {
+    await this.repo.insert(wallet);
+  }
 
-    findByUserId(userId: string): Promise<Wallet | null> {
-        return this.repo.findOne({ where: { userId } });
-    }
+  findByUserId(userId: string): Promise<Wallet | null> {
+    return this.repo.findOne({ where: { userId } });
+  }
 }
