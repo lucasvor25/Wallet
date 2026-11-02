@@ -1,14 +1,18 @@
 import { Module } from '@nestjs/common';
-import { envValidationSchema } from './config/env.validation';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { buildDataSourceOptions } from './database/typeorm.options';
-import { UsersModule } from './modules/users/users.module';
+import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerModule } from '@nestjs/throttler';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { DatabaseModule } from './common/database/database.module';
-import { WalletsModule } from './modules/wallets/wallets.module';
+import { AppThrottlerGuard } from './common/guards/app-throttler.guard';
+import { envValidationSchema } from './config/env.validation';
+import { buildDataSourceOptions } from './database/typeorm.options';
 import { AuthModule } from './modules/auth/auth.module';
 import { LedgerModule } from './modules/ledger/ledger.module';
 import { TransfersModule } from './modules/transfers/transfers.module';
+import { UsersModule } from './modules/users/users.module';
+import { WalletsModule } from './modules/wallets/wallets.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -19,19 +23,29 @@ import { TransfersModule } from './modules/transfers/transfers.module';
       inject: [ConfigService],
       useFactory: (config: ConfigService) =>
         buildDataSourceOptions({
-          host: config.getOrThrow('DATABASE_HOST'),
+          host: config.getOrThrow<string>('DATABASE_HOST'),
           port: config.getOrThrow<number>('DATABASE_PORT'),
-          username: config.getOrThrow('DATABASE_USER'),
-          password: config.getOrThrow('DATABASE_PASSWORD'),
-          database: config.getOrThrow('DATABASE_NAME'),
+          username: config.getOrThrow<string>('DATABASE_USER'),
+          password: config.getOrThrow<string>('DATABASE_PASSWORD'),
+          database: config.getOrThrow<string>('DATABASE_NAME'),
         }),
     }),
-    UsersModule,
+    ThrottlerModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => [
+        {
+          ttl: config.getOrThrow<number>('THROTTLE_TTL_MS'),
+          limit: config.getOrThrow<number>('THROTTLE_LIMIT'),
+        },
+      ],
+    }),
     DatabaseModule,
+    UsersModule,
     WalletsModule,
     AuthModule,
     LedgerModule,
     TransfersModule,
   ],
+  providers: [{ provide: APP_GUARD, useClass: AppThrottlerGuard }],
 })
-export class AppModule {}
+export class AppModule { }
