@@ -9,7 +9,6 @@ const REQUEST_ID_PATTERN = /^[A-Za-z0-9._-]{1,64}$/;
 type RequestWithId = Request & { id?: string };
 
 export function configureApp(app: INestApplication): void {
-
   const secure = helmet();
   const docsFriendly = helmet({ contentSecurityPolicy: false });
   app.use((req: Request, res: Response, next: NextFunction) => {

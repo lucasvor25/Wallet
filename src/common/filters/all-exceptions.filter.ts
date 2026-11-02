@@ -7,7 +7,20 @@ import {
   Logger,
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
+import { QueryFailedError } from 'typeorm';
 import { DomainError } from '../errors/domain.error';
+
+// Deadlock, falha de serialização e lock indisponível: o cliente pode repetir com segurança (Idempotency-Key).
+const TRANSIENT_PG_CODES: ReadonlySet<string> = new Set([
+  '40P01',
+  '40001',
+  '55P03',
+]);
+
+interface PgDriverError {
+  code?: string;
+  constraint?: string;
+}
 
 const DOMAIN_ERROR_STATUS: Readonly<Record<string, number>> = {
   WALLET_NOT_FOUND: HttpStatus.NOT_FOUND,
@@ -69,6 +82,28 @@ export class AllExceptionsFilter implements ExceptionFilter {
       const extracted = this.extractHttpMessage(exception);
       message = extracted.message;
       details = extracted.details;
+    } else if (
+      exception instanceof QueryFailedError &&
+      TRANSIENT_PG_CODES.has(this.pgError(exception.driverError).code ?? '')
+    ) {
+      status = HttpStatus.SERVICE_UNAVAILABLE;
+      error = 'SERVICE_BUSY';
+      message = 'Sistema ocupado, tente novamente';
+      response.setHeader('Retry-After', '1');
+
+      this.logger.warn(
+        `Erro transitório do Postgres: ${this.pgError(exception.driverError).code}`,
+      );
+    } else if (exception instanceof QueryFailedError) {
+      status = HttpStatus.INTERNAL_SERVER_ERROR;
+      error = HttpStatus[HttpStatus.INTERNAL_SERVER_ERROR];
+      message = 'Erro interno';
+
+      const { code, constraint } = this.pgError(exception.driverError);
+      this.logger.error(
+        `${exception.message} (code=${code ?? '-'}, constraint=${constraint ?? '-'})`,
+        exception.stack,
+      );
     } else {
       status = HttpStatus.INTERNAL_SERVER_ERROR;
       error = HttpStatus[HttpStatus.INTERNAL_SERVER_ERROR];
@@ -91,6 +126,15 @@ export class AllExceptionsFilter implements ExceptionFilter {
     };
 
     response.status(status).json(body);
+  }
+
+  private pgError(driver: unknown): PgDriverError {
+    if (typeof driver !== 'object' || driver === null) return {};
+    const { code, constraint } = driver as Record<string, unknown>;
+    return {
+      code: typeof code === 'string' ? code : undefined,
+      constraint: typeof constraint === 'string' ? constraint : undefined,
+    };
   }
 
   private extractHttpMessage(exception: HttpException): HttpMessage {
