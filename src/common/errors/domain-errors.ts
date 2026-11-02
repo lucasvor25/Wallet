@@ -56,6 +56,14 @@ export class InsufficientBalanceError extends DomainError {
   }
 }
 
+export class ReversalFundsUnavailableError extends DomainError {
+  readonly code = 'REVERSAL_FUNDS_UNAVAILABLE';
+
+  constructor() {
+    super('O destinatário não possui saldo suficiente para o estorno');
+  }
+}
+
 export class BalanceLimitExceededError extends DomainError {
   readonly code = 'BALANCE_LIMIT_EXCEEDED';
 
