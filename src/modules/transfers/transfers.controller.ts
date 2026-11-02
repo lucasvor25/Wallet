@@ -16,14 +16,16 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CreateTransferDto } from './dto/create-transfer.dto';
 import { TransferResponseDto } from './dto/transfer-response.dto';
 import { TransfersService } from './transfers.service';
+import { Throttle } from '@nestjs/throttler';
 
 @ApiBearerAuth()
 @Controller('transfers')
 @UseGuards(JwtAuthGuard)
 export class TransfersController {
-  constructor(private readonly transfers: TransfersService) {}
+  constructor(private readonly transfers: TransfersService) { }
 
   @Post()
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   create(
     @Req() req: Request & { user: { userId: string } },
     @Headers('idempotency-key') idempotencyKey: string | undefined,
@@ -45,6 +47,7 @@ export class TransfersController {
   }
 
   @Post(':id/reversal')
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   reverse(
     @Req() req: Request & { user: { userId: string } },
     @Param('id', ParseUUIDPipe) id: string,
