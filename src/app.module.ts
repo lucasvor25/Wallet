@@ -11,7 +11,7 @@ import { AuthModule } from './modules/auth/auth.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      validationSchema: envValidationSchema
+      validationSchema: envValidationSchema,
     }),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
@@ -28,6 +28,6 @@ import { AuthModule } from './modules/auth/auth.module';
     DatabaseModule,
     WalletsModule,
     AuthModule,
-  ]
+  ],
 })
-export class AppModule { }
+export class AppModule {}

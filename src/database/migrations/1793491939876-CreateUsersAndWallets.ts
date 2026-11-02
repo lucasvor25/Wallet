@@ -1,9 +1,8 @@
-import { MigrationInterface, QueryRunner } from "typeorm";
+import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class CreateUsersAndWallets1793491939876 implements MigrationInterface {
-
-    public async up(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`
+  public async up(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(`
     CREATE TABLE users (
       id uuid PRIMARY KEY,
       email varchar(254) NOT NULL,
@@ -12,11 +11,11 @@ export class CreateUsersAndWallets1793491939876 implements MigrationInterface {
       updated_at timestamptz NOT NULL DEFAULT now()
     )
   `);
-        await queryRunner.query(`
+    await queryRunner.query(`
     CREATE UNIQUE INDEX uq_users_email ON users (lower(email))
   `);
 
-        await queryRunner.query(`
+    await queryRunner.query(`
     CREATE TABLE wallets (
       id uuid PRIMARY KEY,
       user_id uuid NOT NULL UNIQUE REFERENCES users(id),
@@ -27,11 +26,10 @@ export class CreateUsersAndWallets1793491939876 implements MigrationInterface {
       updated_at timestamptz NOT NULL DEFAULT now()
     )
   `);
-    }
+  }
 
-    public async down(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`DROP TABLE wallets`);
-        await queryRunner.query(`DROP TABLE users`);
-    }
-
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(`DROP TABLE wallets`);
+    await queryRunner.query(`DROP TABLE users`);
+  }
 }

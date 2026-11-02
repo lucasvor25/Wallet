@@ -1,9 +1,8 @@
-import { MigrationInterface, QueryRunner } from "typeorm";
+import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class CreateTransfers1793498071152 implements MigrationInterface {
-
-    public async up(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`
+  public async up(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(`
     CREATE TABLE transfers (
       id uuid PRIMARY KEY,
       sender_wallet_id uuid NOT NULL REFERENCES wallets(id),
@@ -19,16 +18,16 @@ export class CreateTransfers1793498071152 implements MigrationInterface {
         CHECK (sender_wallet_id <> receiver_wallet_id)
     )
   `);
-        await queryRunner.query(`
+    await queryRunner.query(`
     CREATE INDEX ix_transfers_sender
       ON transfers (sender_wallet_id, created_at DESC, id DESC)
   `);
-        await queryRunner.query(`
+    await queryRunner.query(`
     CREATE INDEX ix_transfers_receiver
       ON transfers (receiver_wallet_id, created_at DESC, id DESC)
   `);
 
-        await queryRunner.query(`
+    await queryRunner.query(`
     CREATE TABLE transfer_reversals (
       id uuid PRIMARY KEY,
       original_transfer_id uuid NOT NULL UNIQUE REFERENCES transfers(id),
@@ -39,11 +38,10 @@ export class CreateTransfers1793498071152 implements MigrationInterface {
         CHECK (original_transfer_id <> reversal_transfer_id)
     )
   `);
-    }
+  }
 
-    public async down(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`DROP TABLE transfer_reversals`);
-        await queryRunner.query(`DROP TABLE transfers`);
-    }
-
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(`DROP TABLE transfer_reversals`);
+    await queryRunner.query(`DROP TABLE transfers`);
+  }
 }

@@ -9,10 +9,12 @@ import { ApiBearerAuth } from '@nestjs/swagger';
 @Controller('wallets')
 @UseGuards(JwtAuthGuard)
 export class WalletsController {
-    constructor(private readonly wallets: WalletsService) { }
+  constructor(private readonly wallets: WalletsService) {}
 
-    @Get('me')
-    getMine(@Req() req: Request & { user: { userId: string } }): Promise<WalletResponseDto> {
-        return this.wallets.getByUserId(req.user.userId);
-    }
+  @Get('me')
+  getMine(
+    @Req() req: Request & { user: { userId: string } },
+  ): Promise<WalletResponseDto> {
+    return this.wallets.getByUserId(req.user.userId);
+  }
 }

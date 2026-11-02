@@ -3,7 +3,7 @@ import { TransactionManager } from './transaction-manager';
 
 @Global()
 @Module({
-    providers: [TransactionManager],
-    exports: [TransactionManager],
+  providers: [TransactionManager],
+  exports: [TransactionManager],
 })
-export class DatabaseModule { }
+export class DatabaseModule {}

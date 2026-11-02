@@ -1,9 +1,8 @@
-import { MigrationInterface, QueryRunner } from "typeorm";
+import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class CreateIdempotencyKeys1793498130364 implements MigrationInterface {
-
-    public async up(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`
+  public async up(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(`
     CREATE TABLE idempotency_keys (
       id uuid PRIMARY KEY,
       user_id uuid NOT NULL REFERENCES users(id),
@@ -16,13 +15,12 @@ export class CreateIdempotencyKeys1793498130364 implements MigrationInterface {
       CONSTRAINT uq_idempotency_user_key UNIQUE (user_id, key)
     )
   `);
-        await queryRunner.query(`
+    await queryRunner.query(`
     CREATE INDEX ix_idempotency_expires_at ON idempotency_keys (expires_at)
   `);
-    }
+  }
 
-    public async down(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`DROP TABLE idempotency_keys`);
-    }
-
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(`DROP TABLE idempotency_keys`);
+  }
 }
