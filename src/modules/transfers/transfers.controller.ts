@@ -22,7 +22,7 @@ import { Throttle } from '@nestjs/throttler';
 @Controller('transfers')
 @UseGuards(JwtAuthGuard)
 export class TransfersController {
-  constructor(private readonly transfers: TransfersService) { }
+  constructor(private readonly transfers: TransfersService) {}
 
   @Post()
   @Throttle({ default: { limit: 5, ttl: 60_000 } })

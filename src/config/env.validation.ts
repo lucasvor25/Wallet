@@ -18,6 +18,10 @@ export const envValidationSchema = Joi.object({
   SEED_USER_PASSWORD: Joi.string().optional(),
   THROTTLE_TTL_MS: Joi.number().integer().positive().default(60_000),
   THROTTLE_LIMIT: Joi.number().integer().positive().default(100),
+  LOG_PRETTY: Joi.boolean().default(false),
+  THROTTLE_DISABLED: Joi.boolean()
+    .default(false)
+    .when('NODE_ENV', { is: 'production', then: Joi.boolean().valid(false) }),
   LOG_LEVEL: Joi.string()
     .valid('debug', 'info', 'warn', 'error')
     .default('info'),

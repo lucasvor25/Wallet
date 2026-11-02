@@ -44,7 +44,7 @@ export class TransfersService {
     private readonly ledger: LedgerRepository,
     private readonly idempotency: IdempotencyRepository,
     private readonly config: ConfigService,
-  ) { }
+  ) {}
 
   async create(
     userId: string,

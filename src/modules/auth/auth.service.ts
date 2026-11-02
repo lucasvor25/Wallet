@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as argon2 from 'argon2';
@@ -28,6 +28,7 @@ export interface LoginResult {
 
 @Injectable()
 export class AuthService implements OnModuleInit {
+  private readonly logger = new Logger(AuthService.name);
   private dummyHash!: string;
 
   constructor(
@@ -63,6 +64,7 @@ export class AuthService implements OnModuleInit {
       throw err;
     }
 
+    this.logger.log({ event: 'auth.registered', userId });
     return { id: userId, email: dto.email, walletId };
   }
 
@@ -76,6 +78,7 @@ export class AuthService implements OnModuleInit {
     }
 
     const accessToken = await this.jwt.signAsync({ sub: user.id });
+    this.logger.log({ event: 'auth.login_succeeded', userId: user.id });
     return {
       accessToken,
       tokenType: 'Bearer',

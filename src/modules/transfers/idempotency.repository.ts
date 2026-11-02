@@ -13,7 +13,7 @@ export interface NewIdempotencyKey {
 
 @Injectable()
 export class IdempotencyRepository {
-  constructor(private readonly tx: TransactionManager) { }
+  constructor(private readonly tx: TransactionManager) {}
 
   private get repo(): Repository<IdempotencyKey> {
     return this.tx.manager.getRepository(IdempotencyKey);
@@ -64,7 +64,9 @@ export class IdempotencyRepository {
       .getRepository(IdempotencyKey)
       .update({ id }, { responseStatus: status, responseBody: body });
     if (result.affected !== 1) {
-      throw new Error(`Idempotency record ${id} not found when saving response`);
+      throw new Error(
+        `Idempotency record ${id} not found when saving response`,
+      );
     }
   }
 }

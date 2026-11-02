@@ -32,6 +32,8 @@ services:
     environment:
       DATABASE_HOST: db
       DATABASE_PORT: 5432
+      # Fixo: pino-pretty é devDependency e não existe na imagem.
+      LOG_PRETTY: 'false'
     ports:
       - '${API_PORT:-3000}:3000'
     depends_on:
@@ -46,6 +48,7 @@ services:
     environment:
       DATABASE_HOST: db
       DATABASE_PORT: 5432
+      LOG_PRETTY: 'false'
     depends_on:
       migrate:
         condition: service_completed_successfully
