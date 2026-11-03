@@ -12,6 +12,8 @@ import { LedgerModule } from './modules/ledger/ledger.module';
 import { TransfersModule } from './modules/transfers/transfers.module';
 import { UsersModule } from './modules/users/users.module';
 import { WalletsModule } from './modules/wallets/wallets.module';
+import { LoggingModule } from './common/logging/logging.module';
+import { HealthModule } from './modules/health/health.module';
 
 @Module({
   imports: [
@@ -45,7 +47,9 @@ import { WalletsModule } from './modules/wallets/wallets.module';
     AuthModule,
     LedgerModule,
     TransfersModule,
+    LoggingModule,
+    HealthModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: AppThrottlerGuard }],
 })
-export class AppModule { }
+export class AppModule {}
