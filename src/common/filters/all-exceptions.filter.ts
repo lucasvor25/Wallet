@@ -23,6 +23,7 @@ interface PgDriverError {
 }
 
 const DOMAIN_ERROR_STATUS: Readonly<Record<string, number>> = {
+  INVALID_CURSOR: HttpStatus.BAD_REQUEST,
   WALLET_NOT_FOUND: HttpStatus.NOT_FOUND,
   TRANSFER_NOT_FOUND: HttpStatus.NOT_FOUND,
   EMAIL_ALREADY_REGISTERED: HttpStatus.CONFLICT,
