@@ -17,6 +17,13 @@ export class UsersRepository {
     await this.repo.insert(user);
   }
 
+  findByEmail(email: string): Promise<User | null> {
+    return this.repo
+      .createQueryBuilder('u')
+      .where('lower(u.email) = :email', { email })
+      .getOne();
+  }
+
   findByEmailWithHash(email: string): Promise<User | null> {
     return this.repo
       .createQueryBuilder('u')

@@ -8,23 +8,43 @@ API REST de carteira digital em que usuários se cadastram, autenticam e transfe
 
 ## Como rodar
 
+Requisito: Docker Desktop (ou Docker Engine + Compose v2) rodando e Node.js para os scripts npm.
+
 ```bash
-cp .env.example .env
-docker compose up --build            # sobe banco, roda migrations e inicia a API
-docker compose --profile seed run --rm seed   # (opcional) cria usuários de demonstração
+npm run docker:up          # ou: docker compose up --build
 ```
+
+O que acontece, em ordem:
+
+1. **`.env`**: se não existir, é criado a partir do `.env.example` (um `.env` existente nunca é alterado).
+2. **Portas**: verifica se `DATABASE_HOST_PORT` (padrão 5433) e `API_PORT` (padrão 3000) estão livres; se não, aborta dizendo qual porta mudar.
+3. **`db`**: sobe o Postgres e espera o healthcheck.
+4. **`migrate`**: aplica as migrations e termina.
+5. **`seed`**: cria os usuários de demonstração e termina. É idempotente: se já existirem, só mostra os dados, sem alterar saldos. Só roda com `SEED_DEMO=true` e `NODE_ENV` diferente de `production`; caso contrário imprime "Seed ignorado".
+6. **`api`**: sobe depois do seed e o comando só retorna quando ela está saudável.
 
 - API: `http://localhost:3000/api/v1`
 - Swagger: `http://localhost:3000/docs`
-- Health: `GET /health` · Métricas: `GET /metrics`
-- Usuários de demo (seed): `alice@example.com` e `bob@example.com`, senhas em `.env.example`
+- Health: `GET /health/live` e `GET /health/ready` · Métricas: `GET /metrics`
+
+**Usuários de demo:** `alice@example.com` (R$ 1.000,00) e `bob@example.com` (R$ 500,00), com a senha `SEED_USER_PASSWORD` do `.env`. Os `walletId` aparecem com `npm run docker:seed-info`.
+
+| Comando | O que faz |
+|---|---|
+| `npm run docker:up` | Sobe tudo (build, migrations, seed, API) |
+| `npm run docker:reset` | Apaga o banco (volume) e sobe tudo do zero |
+| `npm run docker:logs` | Acompanha os logs da API |
+| `npm run docker:seed-info` | Mostra de novo a saída do seed (e-mails e walletIds) |
+| `npm run docker:down` | Para e remove os containers (mantém o banco) |
+
+> **Portas:** se 3000 ou 5433 estiverem ocupadas (por exemplo, por um `npm run start:dev` ou outro Postgres), mude `API_PORT` ou `DATABASE_HOST_PORT` no `.env`.
 
 ```bash
 npm run test          # unitários
 npm run test:int      # integração (Testcontainers, requer Docker)
 ```
 
-> O seed é apenas para demonstração e não deve rodar em produção.
+> O seed é apenas para demonstração e não deve rodar em produção (`SEED_DEMO` só aceita `false` com `NODE_ENV=production`).
 
 ---
 

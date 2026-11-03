@@ -9,7 +9,7 @@ import request from 'supertest';
 import { DataSource } from 'typeorm';
 import { configureApp } from '../../../src/configure-app';
 import { buildDataSourceOptions } from '../../../src/database/typeorm.options';
-import { AppModule } from '../../../src/app.module';
+import type { AppModule as AppModuleType } from '../../../src/app.module';
 
 export interface TestUser {
   email: string;
@@ -80,6 +80,15 @@ export class TestContext {
     await migrator.runMigrations();
     await migrator.destroy();
 
+    // O ConfigModule.forRoot lê e congela o .env quando o app.module é avaliado, e o
+    // ConfigService prioriza esse snapshot sobre o process.env. Com import estático, o
+    // snapshot seria feito antes das linhas acima e a app conectaria no banco do .env
+    // (o do docker compose), truncando os dados de dev. Por isso o require tardio.
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { AppModule } = require('../../../src/app.module') as {
+      AppModule: typeof AppModuleType;
+    };
+
     const moduleRef = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
@@ -89,7 +98,32 @@ export class TestContext {
     // e requisições em paralelo quebram com ERR_SERVER_ALREADY_LISTEN.
     await app.listen(0);
 
-    return new TestContext(app, app.get(DataSource), container);
+    const db = app.get(DataSource);
+    await TestContext.assertUsesContainer(db, container, app);
+
+    return new TestContext(app, db, container);
+  }
+
+  // Barreira contra regressão: nunca rodar TRUNCATE fora do Testcontainer.
+  private static async assertUsesContainer(
+    db: DataSource,
+    container: StartedPostgreSqlContainer,
+    app: INestApplication,
+  ): Promise<void> {
+    const options = db.options as { host?: string; port?: number };
+    if (
+      options.host === container.getHost() &&
+      options.port === container.getPort()
+    ) {
+      return;
+    }
+
+    await app.close();
+    await container.stop();
+    throw new Error(
+      `A app de teste conectou em ${options.host}:${options.port}, não no Testcontainer ` +
+        `(${container.getHost()}:${container.getPort()}). Abortado para não apagar outro banco.`,
+    );
   }
 
   async close(): Promise<void> {

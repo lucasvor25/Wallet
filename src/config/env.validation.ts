@@ -16,6 +16,9 @@ export const envValidationSchema = Joi.object({
   REVERSAL_WINDOW_HOURS: Joi.number().positive().default(72),
   IDEMPOTENCY_TTL_HOURS: Joi.number().positive().default(24),
   SEED_USER_PASSWORD: Joi.string().optional(),
+  SEED_DEMO: Joi.boolean()
+    .default(false)
+    .when('NODE_ENV', { is: 'production', then: Joi.boolean().valid(false) }),
   THROTTLE_TTL_MS: Joi.number().integer().positive().default(60_000),
   THROTTLE_LIMIT: Joi.number().integer().positive().default(100),
   LOG_PRETTY: Joi.boolean().default(false),
