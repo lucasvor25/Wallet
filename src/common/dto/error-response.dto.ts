@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
-// Espelha o corpo montado pelo AllExceptionsFilter; mantenha os dois em sincronia.
+// Espelha o corpo montado pelo AllExceptionsFilter; mantenha os dois em sincronia
 export class ErrorResponseDto {
   @ApiProperty({ description: 'Status HTTP da resposta', example: 422 })
   statusCode!: number;

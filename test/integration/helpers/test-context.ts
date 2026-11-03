@@ -64,7 +64,7 @@ export class TestContext {
     process.env.DATABASE_NAME = container.getDatabase();
     process.env.JWT_SECRET =
       'ksjdfkjsdfkjdsakjflkasjkflmksamf,msanc,vmsklamglmfakçfkfskkfkafkasflkfakflçfdklçfças';
-    // Todas as requisições do Supertest saem do mesmo IP; com o rate limit ativo, os testes recebem 429.
+    // Todas as requisições do Supertest saem do mesmo IP; com o rate limit ativo, os testes recebem 429
     process.env.THROTTLE_DISABLED = 'true';
 
     const migrator = new DataSource(
@@ -80,10 +80,7 @@ export class TestContext {
     await migrator.runMigrations();
     await migrator.destroy();
 
-    // O ConfigModule.forRoot lê e congela o .env quando o app.module é avaliado, e o
-    // ConfigService prioriza esse snapshot sobre o process.env. Com import estático, o
-    // snapshot seria feito antes das linhas acima e a app conectaria no banco do .env
-    // (o do docker compose), truncando os dados de dev. Por isso o require tardio.
+    // Require tardio: com import estático o ConfigModule congelaria o .env antes daqui e os testes truncariam o banco do compose
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { AppModule } = require('../../../src/app.module') as {
       AppModule: typeof AppModuleType;
@@ -94,8 +91,7 @@ export class TestContext {
     }).compile();
     const app = moduleRef.createNestApplication({ logger: false });
     configureApp(app);
-    // Servidor já escutando: sem isso o supertest chama listen() a cada request
-    // e requisições em paralelo quebram com ERR_SERVER_ALREADY_LISTEN.
+    // Sem servidor escutando, o supertest chama listen() a cada request e requisições paralelas quebram
     await app.listen(0);
 
     const db = app.get(DataSource);
@@ -104,7 +100,7 @@ export class TestContext {
     return new TestContext(app, db, container);
   }
 
-  // Barreira contra regressão: nunca rodar TRUNCATE fora do Testcontainer.
+  // Barreira contra regressão: nunca rodar TRUNCATE fora do Testcontainer
   private static async assertUsesContainer(
     db: DataSource,
     container: StartedPostgreSqlContainer,

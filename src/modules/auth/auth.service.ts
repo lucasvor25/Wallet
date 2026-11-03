@@ -1,18 +1,18 @@
+import { randomUUID } from 'node:crypto';
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as argon2 from 'argon2';
-import { randomUUID } from 'node:crypto';
 import { QueryFailedError } from 'typeorm';
-import { UsersRepository } from '../users/users.repository';
-import { LoginDto } from './dto/login.dto';
-import { RegisterDto } from './dto/register.dto';
 import { TransactionManager } from '../../common/database/transaction-manager';
-import { WalletsRepository } from '../wallets/wallets.repository';
 import {
   EmailAlreadyRegisteredError,
   InvalidCredentialsError,
 } from '../../common/errors/domain-errors';
+import { UsersRepository } from '../users/users.repository';
+import { WalletsRepository } from '../wallets/wallets.repository';
+import { LoginDto } from './dto/login.dto';
+import { RegisterDto } from './dto/register.dto';
 
 export interface RegisterResult {
   id: string;

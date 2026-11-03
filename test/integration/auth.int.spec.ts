@@ -62,7 +62,7 @@ describe('Autenticação (integração)', () => {
   });
 
   describe('login', () => {
-    it('devolve token para credenciais válidas', async () => {
+    it('retorna token para credenciais válidas', async () => {
       await ctx.register('alice@test.com').expect(201);
 
       const res = await ctx.login('alice@test.com', 'Senha@123').expect(200);
@@ -71,7 +71,7 @@ describe('Autenticação (integração)', () => {
       expect(res.body.tokenType).toBe('Bearer');
     });
 
-    it('responde igual (401 e mesma mensagem) para senha errada e e-mail inexistente', async () => {
+    it('retorna o mesmo 401 e a mesma mensagem para senha errada e e-mail inexistente', async () => {
       await ctx.register('alice@test.com').expect(201);
 
       const wrongPassword = await ctx
@@ -87,7 +87,7 @@ describe('Autenticação (integração)', () => {
   });
 
   describe('/wallets/me', () => {
-    it('devolve a carteira do usuário autenticado', async () => {
+    it('retorna a carteira do usuário autenticado', async () => {
       const alice = await ctx.createUser('alice@test.com');
 
       const res = await ctx

@@ -56,14 +56,14 @@ export class TransferResponseDto {
   createdAt!: string;
 }
 
-export function toTransferResponse(t: Transfer): TransferResponseDto {
+export function toTransferResponse(transfer: Transfer): TransferResponseDto {
   return {
-    id: t.id,
-    senderWalletId: t.senderWalletId,
-    receiverWalletId: t.receiverWalletId,
-    amountInCents: t.amountInCents,
-    type: t.type,
-    status: t.status,
-    createdAt: t.createdAt.toISOString(),
+    id: transfer.id,
+    senderWalletId: transfer.senderWalletId,
+    receiverWalletId: transfer.receiverWalletId,
+    amountInCents: transfer.amountInCents,
+    type: transfer.type,
+    status: transfer.status,
+    createdAt: transfer.createdAt.toISOString(),
   };
 }

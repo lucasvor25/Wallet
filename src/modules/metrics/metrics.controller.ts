@@ -1,3 +1,4 @@
+import { createHash, timingSafeEqual } from 'node:crypto';
 import {
   Controller,
   Get,
@@ -8,7 +9,6 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { ApiExcludeController } from '@nestjs/swagger';
 import { SkipThrottle } from '@nestjs/throttler';
-import { createHash, timingSafeEqual } from 'node:crypto';
 import type { Request, Response } from 'express';
 import { MetricsService } from './metrics.service';
 
@@ -43,7 +43,7 @@ export class MetricsController {
     if (typeof header !== 'string' || !header.startsWith('Bearer ')) {
       return false;
     }
-    // Hash iguala o tamanho dos buffers, exigido pelo timingSafeEqual, sem vazar o tamanho do token.
+    // Hash iguala o tamanho dos buffers, exigido pelo timingSafeEqual, sem vazar o tamanho do token
     return timingSafeEqual(
       sha256(header.slice('Bearer '.length)),
       sha256(this.token ?? ''),

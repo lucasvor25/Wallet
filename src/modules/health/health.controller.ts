@@ -18,7 +18,7 @@ export class HealthController {
     private readonly db: TypeOrmHealthIndicator,
   ) {}
 
-  // Liveness não consulta dependências: banco fora do ar não deve reiniciar o processo.
+  // Liveness não consulta dependências: banco fora do ar não deve reiniciar o processo
   @Get('live')
   @ApiOperation({
     summary: 'Liveness',

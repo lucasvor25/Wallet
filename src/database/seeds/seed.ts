@@ -1,6 +1,6 @@
+import { randomUUID } from 'node:crypto';
 import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { randomUUID } from 'node:crypto';
 import { AppModule } from '../../app.module';
 import { EmailAlreadyRegisteredError } from '../../common/errors/domain-errors';
 import { TransactionManager } from '../../common/database/transaction-manager';
@@ -28,8 +28,7 @@ const DEFAULT_SEED_PASSWORD = 'Demo@12345';
 
 const logger = new Logger('Seed');
 
-// Checado antes de subir o contexto: com o seed desligado nem conecta no banco.
-// Sai com 0 para não travar o compose (a API depende do seed concluir com sucesso).
+// Checado antes de subir o contexto e sai com 0: o compose espera o seed concluir para subir a API
 function isSeedEnabled(): boolean {
   const enabled = process.env.SEED_DEMO?.trim().toLowerCase() === 'true';
   return enabled && process.env.NODE_ENV !== 'production';
@@ -120,7 +119,7 @@ function summary(seeded: SeededUser[]): string {
     `Swagger: ${base}/docs`,
     `Health:  ${base}/health/ready`,
     'Senha dos usuários: SEED_USER_PASSWORD do .env',
-    ...seeded.map((u) => `${u.email.padEnd(20)} wallet ${u.walletId}`),
+    ...seeded.map((user) => `${user.email.padEnd(20)} wallet ${user.walletId}`),
     '==========================================================',
   ];
   return lines.join('\n');

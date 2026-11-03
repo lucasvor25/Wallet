@@ -1,8 +1,8 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
-import { configureApp } from './configure-app';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { Logger } from 'nestjs-pino';
+import { AppModule } from './app.module';
+import { configureApp } from './configure-app';
 
 const API_DESCRIPTION = `
 API REST de carteira financeira: cadastro, autenticação JWT, consulta de saldo e extrato, transferência entre carteiras e estorno.

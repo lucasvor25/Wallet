@@ -15,7 +15,7 @@ export class HttpMetricsMiddleware implements NestMiddleware {
       return;
     }
 
-    // O Nest monta este middleware como rota curinga; se nenhum controller casar, req.route continua sendo ela.
+    // O Nest monta este middleware como rota curinga; se nenhum controller casar, req.route continua sendo ela
     const middlewareRoute: unknown = req.route;
     const end = this.metrics.startHttpTimer();
     res.on('finish', () => {
@@ -29,7 +29,7 @@ export class HttpMetricsMiddleware implements NestMiddleware {
   }
 }
 
-// Padrão da rota (/transfers/:id/reversal), nunca a URL real: ids no label explodiriam a cardinalidade.
+// Padrão da rota (/transfers/:id/reversal), nunca a URL real: ids no label explodiriam a cardinalidade
 function routePattern(req: Request, middlewareRoute: unknown): string {
   const route: unknown = req.route;
   if (route === middlewareRoute) return 'unmatched';

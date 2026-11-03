@@ -13,7 +13,7 @@ type HttpLabels = 'method' | 'route' | 'status_code';
 
 @Injectable()
 export class MetricsService {
-  // Registry por instância: o global do prom-client quebraria com métrica duplicada quando os testes sobem vários apps.
+  // Registry por instância: o global do prom-client quebraria com métrica duplicada quando os testes sobem vários apps
   private readonly registry = new Registry();
 
   private readonly httpDuration = new Histogram<HttpLabels>({

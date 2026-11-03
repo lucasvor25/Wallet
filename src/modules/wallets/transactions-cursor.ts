@@ -1,7 +1,7 @@
 import { InvalidCursorError } from '../../common/errors/domain-errors';
 
 export interface TransactionsCursor {
-  // Texto com microssegundos, como veio do banco: passar por Date perderia precisão e pularia linhas.
+  // Texto com microssegundos, como veio do banco: passar por Date perderia precisão e pularia linhas
   createdAt: string;
   id: string;
 }

@@ -1,17 +1,17 @@
 import { Controller, Get, Query, Req, UseGuards } from '@nestjs/common';
-import type { Request } from 'express';
 import {
   ApiBearerAuth,
   ApiOperation,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import type { Request } from 'express';
 import { ErrorResponseDto } from '../../common/dto/error-response.dto';
-import { WalletsService } from './wallets.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
-import { WalletResponseDto } from './dto/wallet.response.dto';
 import { ListTransactionsQueryDto } from './dto/list-transactions.query.dto';
 import { TransactionsPageDto } from './dto/transactions-page.dto';
+import { WalletResponseDto } from './dto/wallet.response.dto';
+import { WalletsService } from './wallets.service';
 
 @ApiTags('wallets')
 @ApiBearerAuth()

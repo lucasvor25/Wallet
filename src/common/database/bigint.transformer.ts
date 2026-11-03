@@ -1,6 +1,6 @@
 import { ValueTransformer } from 'typeorm';
 
-// Falhar alto é preferível a gravar ou devolver um valor monetário com precisão perdida.
+// Falhar alto é preferível a gravar ou devolver um valor monetário com precisão perdida
 export const bigintTransformer: ValueTransformer = {
   to: (value?: number | null): number | null | undefined => {
     if (value == null) return value;

@@ -1,7 +1,7 @@
+import { randomUUID } from 'node:crypto';
+import type { IncomingMessage } from 'node:http';
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import type { IncomingMessage } from 'node:http';
-import { randomUUID } from 'node:crypto';
 import { LoggerModule } from 'nestjs-pino';
 
 type RequestWithId = IncomingMessage & { id?: string };

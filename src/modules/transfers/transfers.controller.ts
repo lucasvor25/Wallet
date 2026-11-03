@@ -18,13 +18,13 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import type { Request } from 'express';
 import { ErrorResponseDto } from '../../common/dto/error-response.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CreateTransferDto } from './dto/create-transfer.dto';
 import { TransferResponseDto } from './dto/transfer-response.dto';
 import { TransfersService } from './transfers.service';
-import { Throttle } from '@nestjs/throttler';
 
 const TRANSFER_ID_PARAM = {
   name: 'id',
