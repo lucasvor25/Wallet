@@ -22,6 +22,7 @@ export const envValidationSchema = Joi.object({
   THROTTLE_DISABLED: Joi.boolean()
     .default(false)
     .when('NODE_ENV', { is: 'production', then: Joi.boolean().valid(false) }),
+  METRICS_TOKEN: Joi.string().min(16).optional(),
   LOG_LEVEL: Joi.string()
     .valid('debug', 'info', 'warn', 'error')
     .default('info'),

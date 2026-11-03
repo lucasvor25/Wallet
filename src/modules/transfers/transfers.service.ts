@@ -18,6 +18,7 @@ import {
 } from '../../common/errors/domain-errors';
 import { LedgerEntry } from '../ledger/entities/ledger-entry.entity';
 import { LedgerRepository } from '../ledger/ledger.repository';
+import { MetricsService } from '../metrics/metrics.service';
 import { Wallet } from '../wallets/wallet.entity';
 import { WalletsRepository } from '../wallets/wallets.repository';
 import { CreateTransferDto } from './dto/create-transfer.dto';
@@ -44,6 +45,7 @@ export class TransfersService {
     private readonly ledger: LedgerRepository,
     private readonly idempotency: IdempotencyRepository,
     private readonly config: ConfigService,
+    private readonly metrics: MetricsService,
   ) {}
 
   async create(
@@ -104,12 +106,20 @@ export class TransfersService {
       return { replayed: false, transfer };
     });
 
-    if (outcome.replayed) return outcome.response;
+    if (outcome.replayed) {
+      this.logger.log({
+        event: 'transfer.replayed',
+        transferId: outcome.response.id,
+      });
+      this.metrics.recordTransfer('TRANSFER', 'replayed');
+      return outcome.response;
+    }
 
     this.logger.log({
       event: 'transfer.completed',
       transferId: outcome.transfer.id,
     });
+    this.metrics.recordTransfer('TRANSFER', 'completed');
     return toTransferResponse(outcome.transfer);
   }
 
@@ -258,6 +268,7 @@ export class TransfersService {
       transferId,
       reversalId: reversal.id,
     });
+    this.metrics.recordTransfer('REVERSAL', 'completed');
     return toTransferResponse(reversal);
   }
 

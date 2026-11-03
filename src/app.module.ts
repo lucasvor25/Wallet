@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD } from '@nestjs/core';
+import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
+import { MetricsModule } from './modules/metrics/metrics.module';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DatabaseModule } from './common/database/database.module';
@@ -49,7 +51,11 @@ import { HealthModule } from './modules/health/health.module';
     TransfersModule,
     LoggingModule,
     HealthModule,
+    MetricsModule,
   ],
-  providers: [{ provide: APP_GUARD, useClass: AppThrottlerGuard }],
+  providers: [
+    { provide: APP_GUARD, useClass: AppThrottlerGuard },
+    { provide: APP_FILTER, useClass: AllExceptionsFilter },
+  ],
 })
 export class AppModule {}

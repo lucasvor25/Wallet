@@ -4,11 +4,14 @@ import {
   ExceptionFilter,
   HttpException,
   HttpStatus,
+  Injectable,
   Logger,
+  Optional,
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { QueryFailedError } from 'typeorm';
 import { DomainError } from '../errors/domain.error';
+import { MetricsService } from '../../modules/metrics/metrics.service';
 
 // Deadlock, falha de serialização e lock indisponível: o cliente pode repetir com segurança (Idempotency-Key).
 const TRANSIENT_PG_CODES: ReadonlySet<string> = new Set([
@@ -55,9 +58,12 @@ interface HttpMessage {
   details?: string[];
 }
 
+@Injectable()
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
   private readonly logger = new Logger(AllExceptionsFilter.name);
+
+  constructor(@Optional() private readonly metrics?: MetricsService) {}
 
   catch(exception: unknown, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
@@ -75,6 +81,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       error = exception.code;
       message = exception.message;
 
+      this.metrics?.recordDomainError(exception.code);
       this.logger.warn(`${exception.code}: ${exception.message}`);
     } else if (exception instanceof HttpException) {
       status = exception.getStatus();

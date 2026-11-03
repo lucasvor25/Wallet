@@ -7,6 +7,7 @@ import {
   TransferAlreadyReversedError,
 } from '../../common/errors/domain-errors';
 import { LedgerRepository } from '../ledger/ledger.repository';
+import { MetricsService } from '../metrics/metrics.service';
 import { Wallet } from '../wallets/wallet.entity';
 import { WalletsRepository } from '../wallets/wallets.repository';
 import { Transfer } from './entities/transfer.entity';
@@ -76,6 +77,7 @@ describe('TransfersService', () => {
       ledger as unknown as LedgerRepository,
       idempotency as unknown as IdempotencyRepository,
       config as unknown as ConfigService,
+      { recordTransfer: jest.fn() } as unknown as MetricsService,
     );
   });
 
