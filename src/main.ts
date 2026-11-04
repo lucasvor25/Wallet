@@ -23,8 +23,8 @@ Todo erro tem o mesmo corpo: \`{ statusCode, error, message, details?, requestId
 
 ## Rate limit (por IP)
 - Login e cadastro: 5 requisições/min.
-- Transferência: 5 requisições/min.
-- Estorno: 5 requisições/min.
+- Transferência: 20 requisições/min.
+- Estorno: 10 requisições/min.
 - Demais rotas: \`THROTTLE_LIMIT\` requisições por janela de \`THROTTLE_TTL_MS\` (padrão 100 a cada 60 s).
 - \`/health\` não tem limite.
 

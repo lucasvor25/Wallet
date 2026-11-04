@@ -46,11 +46,11 @@ export class TransfersController {
   constructor(private readonly transfers: TransfersService) {}
 
   @Post()
-  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  @Throttle({ default: { limit: 20, ttl: 60_000 } })
   @ApiOperation({
     summary: 'Transferir saldo para outra carteira',
     description:
-      'Debita a carteira do usuário autenticado (o remetente vem do JWT, nunca do corpo) e credita a carteira de destino, de forma atômica. O header Idempotency-Key é obrigatório: repetir a requisição com a mesma chave e o mesmo corpo não gera nova transferência e devolve 201 com o corpo salvo da primeira execução (o status atual, por exemplo após estorno, deve ser consultado em GET /transfers/{id}). Limite: 5 requisições por minuto por IP.',
+      'Debita a carteira do usuário autenticado (o remetente vem do JWT, nunca do corpo) e credita a carteira de destino, de forma atômica. O header Idempotency-Key é obrigatório: repetir a requisição com a mesma chave e o mesmo corpo não gera nova transferência e devolve 201 com o corpo salvo da primeira execução (o status atual, por exemplo após estorno, deve ser consultado em GET /transfers/{id}). Limite: 20 requisições por minuto por IP.',
   })
   @ApiHeader({
     name: 'Idempotency-Key',
@@ -98,7 +98,7 @@ export class TransfersController {
   @ApiResponse({
     status: 429,
     description:
-      'TOO_MANY_REQUESTS: limite de 5 transferências por minuto por IP.',
+      'TOO_MANY_REQUESTS: limite de 20 transferências por minuto por IP.',
     type: ErrorResponseDto,
   })
   @ApiResponse({
@@ -150,11 +150,11 @@ export class TransfersController {
   }
 
   @Post(':id/reversal')
-  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @ApiOperation({
     summary: 'Estornar transferência',
     description:
-      'Cria uma transação REVERSAL que devolve o valor ao remetente e marca a original como REVERSED (os valores da original nunca mudam). Só o remetente pode estornar, dentro da janela REVERSAL_WINDOW_HOURS, e o destinatário precisa ter saldo para a devolução. A resposta é o registro do estorno (type REVERSAL). Limite: 5 requisições por minuto por IP.',
+      'Cria uma transação REVERSAL que devolve o valor ao remetente e marca a original como REVERSED (os valores da original nunca mudam). Só o remetente pode estornar, dentro da janela REVERSAL_WINDOW_HOURS, e o destinatário precisa ter saldo para a devolução. A resposta é o registro do estorno (type REVERSAL). Limite: 10 requisições por minuto por IP.',
   })
   @ApiParam(TRANSFER_ID_PARAM)
   @ApiResponse({
@@ -192,7 +192,7 @@ export class TransfersController {
   })
   @ApiResponse({
     status: 429,
-    description: 'TOO_MANY_REQUESTS: limite de 5 estornos por minuto por IP.',
+    description: 'TOO_MANY_REQUESTS: limite de 10 estornos por minuto por IP.',
     type: ErrorResponseDto,
   })
   @ApiResponse({

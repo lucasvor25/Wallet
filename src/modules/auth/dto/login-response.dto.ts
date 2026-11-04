@@ -18,7 +18,7 @@ export class LoginResponseDto {
 
   @ApiProperty({
     description: 'Validade do token (formato do JWT_EXPIRES_IN)',
-    example: '60m',
+    example: '15m',
   })
   expiresIn!: string;
 }
