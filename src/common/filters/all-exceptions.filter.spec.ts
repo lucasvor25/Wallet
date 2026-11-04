@@ -36,7 +36,7 @@ describe('AllExceptionsFilter', () => {
   afterEach(() => jest.restoreAllMocks());
 
   it.each(['40P01', '40001', '55P03'])(
-    'responde 503 SERVICE_BUSY com Retry-After para o erro transitório %s',
+    'retorna 503 SERVICE_BUSY com Retry-After para o erro transitório %s',
     (code) => {
       const { host, response } = mockHost();
 
@@ -56,7 +56,7 @@ describe('AllExceptionsFilter', () => {
     },
   );
 
-  it('responde 500 genérico para violação de CHECK (23514) sem expor detalhes do banco', () => {
+  it('retorna 500 genérico para violação de CHECK (23514) sem expor detalhes do banco', () => {
     const { host, response } = mockHost();
 
     filter.catch(pgError('23514', 'ck_wallets_balance_non_negative'), host);

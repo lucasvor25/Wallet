@@ -52,7 +52,7 @@ describe('Transferências concorrentes (integração)', () => {
     expect(await ctx.count('transfers')).toBe(20);
   });
 
-  it('com a mesma Idempotency-Key em paralelo devolve o mesmo id e cria uma única transferência', async () => {
+  it('retorna o mesmo id e cria uma única transferência com a mesma Idempotency-Key em paralelo', async () => {
     await ctx.fund(alice.walletId, 100_000);
     const key = randomUUID();
 

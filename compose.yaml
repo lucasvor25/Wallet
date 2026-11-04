@@ -43,13 +43,14 @@ services:
       retries: 5
       start_period: 15s
     depends_on:
-      migrate:
+      seed:
         condition: service_completed_successfully
 
+  # Roda a cada up; só cria dados se SEED_DEMO=true e NODE_ENV != production (senão sai com 0).
   seed:
     build: .
-    profiles: ['seed']
     command: node dist/database/seeds/seed.js
+    restart: 'no'
     env_file: .env
     environment:
       DATABASE_HOST: db

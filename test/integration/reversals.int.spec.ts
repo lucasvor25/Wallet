@@ -83,7 +83,7 @@ describe('Estornos (integração)', () => {
   it('retorna 422 ao tentar estornar um estorno', async () => {
     const reversal = await ctx.reverse(alice, transferId).expect(201);
 
-    // Bob é o remetente do estorno, então passa pela checagem de autoria e cai na regra de tipo.
+    // Bob é o remetente do estorno, então passa pela checagem de autoria e cai na regra de tipo
     const res = await ctx.reverse(bob, reversal.body.id).expect(422);
 
     expect(res.body.error).toBe('TRANSFER_NOT_REVERSIBLE');
