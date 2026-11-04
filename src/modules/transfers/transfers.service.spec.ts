@@ -7,6 +7,7 @@ import {
   TransferAlreadyReversedError,
 } from '../../common/errors/domain-errors';
 import { LedgerRepository } from '../ledger/ledger.repository';
+import { MetricsService } from '../metrics/metrics.service';
 import { Wallet } from '../wallets/wallet.entity';
 import { WalletsRepository } from '../wallets/wallets.repository';
 import { Transfer } from './entities/transfer.entity';
@@ -76,6 +77,7 @@ describe('TransfersService', () => {
       ledger as unknown as LedgerRepository,
       idempotency as unknown as IdempotencyRepository,
       config as unknown as ConfigService,
+      { recordTransfer: jest.fn() } as unknown as MetricsService,
     );
   });
 
@@ -137,7 +139,7 @@ describe('TransfersService', () => {
     });
 
     it('valida o saldo com o valor lido depois do lock, não antes', async () => {
-      // findByUserId vê saldo alto; o lock devolve o saldo real, já consumido por outra transação.
+      // findByUserId vê saldo alto; o lock devolve o saldo real, já consumido por outra transação
       wallets.findByUserId.mockResolvedValue(wallet(ALICE_WALLET, 100_000));
       wallets.lockById.mockImplementation((id: string) =>
         Promise.resolve(
@@ -228,7 +230,7 @@ describe('TransfersService', () => {
     });
 
     it('decide pelo status lido com lock, não pela leitura inicial', async () => {
-      // Sem lock a leitura inicial diz COMPLETED; com lock, um estorno concorrente já marcou REVERSED.
+      // Sem lock a leitura inicial diz COMPLETED; com lock, um estorno concorrente já marcou REVERSED
       givenWallets(70_000, 30_000);
       transfers.findById.mockResolvedValue(original('COMPLETED'));
       transfers.lockById.mockResolvedValue(original('REVERSED'));

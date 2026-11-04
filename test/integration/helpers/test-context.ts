@@ -9,7 +9,7 @@ import request from 'supertest';
 import { DataSource } from 'typeorm';
 import { configureApp } from '../../../src/configure-app';
 import { buildDataSourceOptions } from '../../../src/database/typeorm.options';
-import { AppModule } from '../../../src/app.module';
+import type { AppModule as AppModuleType } from '../../../src/app.module';
 
 export interface TestUser {
   email: string;
@@ -64,7 +64,7 @@ export class TestContext {
     process.env.DATABASE_NAME = container.getDatabase();
     process.env.JWT_SECRET =
       'ksjdfkjsdfkjdsakjflkasjkflmksamf,msanc,vmsklamglmfakçfkfskkfkafkasflkfakflçfdklçfças';
-    // Todas as requisições do Supertest saem do mesmo IP; com o rate limit ativo, os testes recebem 429.
+    // Todas as requisições do Supertest saem do mesmo IP; com o rate limit ativo, os testes recebem 429
     process.env.THROTTLE_DISABLED = 'true';
 
     const migrator = new DataSource(
@@ -80,16 +80,46 @@ export class TestContext {
     await migrator.runMigrations();
     await migrator.destroy();
 
+    // Require tardio: com import estático o ConfigModule congelaria o .env antes daqui e os testes truncariam o banco do compose
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { AppModule } = require('../../../src/app.module') as {
+      AppModule: typeof AppModuleType;
+    };
+
     const moduleRef = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
     const app = moduleRef.createNestApplication({ logger: false });
     configureApp(app);
-    // Servidor já escutando: sem isso o supertest chama listen() a cada request
-    // e requisições em paralelo quebram com ERR_SERVER_ALREADY_LISTEN.
+    // Sem servidor escutando, o supertest chama listen() a cada request e requisições paralelas quebram
     await app.listen(0);
 
-    return new TestContext(app, app.get(DataSource), container);
+    const db = app.get(DataSource);
+    await TestContext.assertUsesContainer(db, container, app);
+
+    return new TestContext(app, db, container);
+  }
+
+  // Barreira contra regressão: nunca rodar TRUNCATE fora do Testcontainer
+  private static async assertUsesContainer(
+    db: DataSource,
+    container: StartedPostgreSqlContainer,
+    app: INestApplication,
+  ): Promise<void> {
+    const options = db.options as { host?: string; port?: number };
+    if (
+      options.host === container.getHost() &&
+      options.port === container.getPort()
+    ) {
+      return;
+    }
+
+    await app.close();
+    await container.stop();
+    throw new Error(
+      `A app de teste conectou em ${options.host}:${options.port}, não no Testcontainer ` +
+        `(${container.getHost()}:${container.getPort()}). Abortado para não apagar outro banco.`,
+    );
   }
 
   async close(): Promise<void> {

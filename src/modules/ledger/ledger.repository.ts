@@ -77,21 +77,21 @@ export class LedgerRepository {
           [walletId, take],
         );
 
-    return rows.map((r) => ({
-      id: r.id,
-      transferId: r.transfer_id,
-      direction: r.direction,
-      amountInCents: toSafeInteger(r.amount_in_cents),
-      balanceAfterInCents: toSafeInteger(r.balance_after_in_cents),
-      source: r.source,
-      counterpartyWalletId: r.counterparty_wallet_id,
-      createdAt: r.created_at,
-      cursorCreatedAt: r.cursor_created_at,
+    return rows.map((row) => ({
+      id: row.id,
+      transferId: row.transfer_id,
+      direction: row.direction,
+      amountInCents: toSafeInteger(row.amount_in_cents),
+      balanceAfterInCents: toSafeInteger(row.balance_after_in_cents),
+      source: row.source,
+      counterpartyWalletId: row.counterparty_wallet_id,
+      createdAt: row.created_at,
+      cursorCreatedAt: row.cursor_created_at,
     }));
   }
 }
 
-// Query crua não passa pelo bigintTransformer; mesma regra: falhar em vez de perder precisão.
+// Query crua não passa pelo bigintTransformer; mesma regra: falhar em vez de perder precisão
 function toSafeInteger(value: string): number {
   const parsed = Number(value);
   if (!Number.isSafeInteger(parsed)) {

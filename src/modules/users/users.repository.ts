@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
-import { User } from './user.entity';
 import { TransactionManager } from '../../common/database/transaction-manager';
+import { User } from './user.entity';
 
 @Injectable()
 export class UsersRepository {
@@ -15,6 +15,13 @@ export class UsersRepository {
     user: Pick<User, 'id' | 'email' | 'passwordHash'>,
   ): Promise<void> {
     await this.repo.insert(user);
+  }
+
+  findByEmail(email: string): Promise<User | null> {
+    return this.repo
+      .createQueryBuilder('u')
+      .where('lower(u.email) = :email', { email })
+      .getOne();
   }
 
   findByEmailWithHash(email: string): Promise<User | null> {

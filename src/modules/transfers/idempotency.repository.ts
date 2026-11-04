@@ -19,13 +19,7 @@ export class IdempotencyRepository {
     return this.tx.manager.getRepository(IdempotencyKey);
   }
 
-  async tryInsert(row: {
-    id: string;
-    userId: string;
-    key: string;
-    requestHash: string;
-    expiresAt: Date;
-  }): Promise<boolean> {
+  async tryInsert(row: NewIdempotencyKey): Promise<boolean> {
     const rows: unknown[] = await this.tx.manager.query(
       `INSERT INTO idempotency_keys (id, user_id, key, request_hash, expires_at)
      VALUES ($1, $2, $3, $4, $5)
@@ -60,10 +54,11 @@ export class IdempotencyRepository {
   }
 
   async saveResponse(id: string, status: number, body: object): Promise<void> {
-    const result = await this.tx.manager
-      .getRepository(IdempotencyKey)
-      .update({ id }, { responseStatus: status, responseBody: body });
-    if (result.affected !== 1) {
+    const updateResult = await this.repo.update(
+      { id },
+      { responseStatus: status, responseBody: body },
+    );
+    if (updateResult.affected !== 1) {
       throw new Error(
         `Idempotency record ${id} not found when saving response`,
       );

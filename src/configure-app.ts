@@ -1,7 +1,6 @@
-import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
+import { INestApplication, ValidationPipe } from '@nestjs/common';
 import type { NextFunction, Request, Response } from 'express';
-import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import helmet from 'helmet';
 
 const REQUEST_ID_PATTERN = /^[A-Za-z0-9._-]{1,64}$/;
@@ -28,7 +27,9 @@ export function configureApp(app: INestApplication): void {
     next();
   });
 
-  app.setGlobalPrefix('api/v1', { exclude: ['health/live', 'health/ready'] });
+  app.setGlobalPrefix('api/v1', {
+    exclude: ['health/live', 'health/ready', 'metrics'],
+  });
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -37,8 +38,6 @@ export function configureApp(app: INestApplication): void {
       transform: true,
     }),
   );
-
-  app.useGlobalFilters(new AllExceptionsFilter());
 
   app.enableShutdownHooks();
 }

@@ -71,7 +71,7 @@ describe('Consistência (integração)', () => {
     expect(total).toBe(100_000);
   });
 
-  it('ledger rejeita UPDATE e DELETE (append-only garantido pelo banco)', async () => {
+  it('rejeita UPDATE e DELETE no ledger (append-only garantido pelo banco)', async () => {
     await ctx.transfer(alice, bob.walletId, 1_000).expect(201);
     const before = await ctx.count('ledger_entries');
 

@@ -168,4 +168,36 @@ describe('Transferências (integração)', () => {
       expect(res.body.error).toBe('TRANSFER_NOT_FOUND');
     });
   });
+
+  describe('rate limit', () => {
+    // O guard lê THROTTLE_DISABLED a cada requisição; o setup acima roda com o limite desligado
+    beforeEach(() => {
+      process.env.THROTTLE_DISABLED = 'false';
+    });
+    afterEach(() => {
+      process.env.THROTTLE_DISABLED = 'true';
+    });
+
+    it('aceita 20 transferências por minuto e retorna 429 na 21ª', async () => {
+      for (let i = 0; i < 20; i++) {
+        await ctx.transfer(alice, bob.walletId, 100).expect(201);
+      }
+
+      const res = await ctx.transfer(alice, bob.walletId, 100).expect(429);
+
+      expect(res.body.error).toBe('TOO_MANY_REQUESTS');
+      expect(await ctx.count('transfers')).toBe(20);
+      expect(await ctx.balanceOf(alice.walletId)).toBe(98_000);
+    });
+
+    it('aceita 10 pedidos de estorno por minuto e retorna 429 no 11º', async () => {
+      for (let i = 0; i < 10; i++) {
+        await ctx.reverse(alice, randomUUID()).expect(404);
+      }
+
+      const res = await ctx.reverse(alice, randomUUID()).expect(429);
+
+      expect(res.body.error).toBe('TOO_MANY_REQUESTS');
+    });
+  });
 });
